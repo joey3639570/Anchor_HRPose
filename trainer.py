@@ -92,8 +92,10 @@ class Trainer:
         iter_start_time = time.time()
 
         inps, targets = self.prefetcher.next()
-        inps = inps.to(self.data_type)
-        targets = targets.to(self.data_type)
+        inps = inps.to(self.data_type, non_blocking=True)
+        targets = targets.to(self.data_type, non_blocking=True)
+        #inps = inps.to(self.data_type)
+        #targets = targets.to(self.data_type)
         targets.requires_grad = False
         inps, targets = self.exp.preprocess(inps, targets, self.input_size)
         data_end_time = time.time()

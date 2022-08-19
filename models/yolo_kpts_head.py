@@ -446,7 +446,6 @@ class YOLOXHeadKPTS(nn.Module):
                     l1_target = self.get_l1_target(
                         outputs.new_zeros((num_fg_img, 4)),
                         gt_bboxes_per_image[matched_gt_inds],
-                        gt_bboxes_per_image[matched_gt_inds],
                         expanded_strides[0][fg_mask],
                         x_shifts=x_shifts[0][fg_mask],
                         y_shifts=y_shifts[0][fg_mask],
