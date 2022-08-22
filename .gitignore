@@ -92,3 +92,5 @@ draws/
 plot/
 backup/*
 YOLOX_outputs/*
+
+*.pth
