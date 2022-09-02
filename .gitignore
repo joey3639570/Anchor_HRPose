@@ -92,5 +92,8 @@ draws/
 plot/
 backup/*
 YOLOX_outputs/*
+YOLOX_outputs/*/*
+20220819/*
+20220819/*/*
 
 *.pth
