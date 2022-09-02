@@ -38,7 +38,7 @@ class HRNet_Anchor(nn.Module):
 
     def __init__(self, backbone=None, head=None):
         super().__init__()
-
+        
         self.backbone = backbone
         self.head = head
     
@@ -47,11 +47,11 @@ class HRNet_Anchor(nn.Module):
         hrnet_outs = self.backbone(x)
         if self.training:
             assert targets is not None
-            if isinstance(self.head, models.yolo_kpts_head.YOLOXHeadKPTS):
+            if isinstance(self.head, models.yolo_kpts_head_64.YOLOXHeadKPTS):
                 loss, iou_loss, conf_loss, cls_loss, l1_loss, kpts_loss, kpts_vis_loss, num_fg = self.head(
                     hrnet_outs, targets, x
                 )
-                outputs = {
+                outputs_H = {
                     "total_loss": loss,
                     "iou_loss": iou_loss,
                     "l1_loss": l1_loss,
@@ -60,18 +60,16 @@ class HRNet_Anchor(nn.Module):
                     "kpts_loss": kpts_loss,
                     "kpts_vis_loss": kpts_vis_loss,
                     "num_fg": num_fg,
-                }
-            
+                }    
         else:
-            outputs = self.head(hrnet_outs)
-            
-        return outputs
+            outputs_H = self.head(hrnet_outs)
+        return outputs_H
 
 class Exp(MyExp):
     def __init__(self):
         super(Exp, self).__init__()
         self.depth = 0.33
-        self.width = 0.50
+        self.width = 1
         self.exp_name = os.path.split(os.path.realpath(__file__))[1].split(".")[0]
         self.data_dir = os.path.join(os.path.dirname(os.path.dirname( __file__ )), "coco_kpts")
 
@@ -86,21 +84,37 @@ class Exp(MyExp):
                     m.eps = 1e-3
                     m.momentum = 0.03
 
-        cfg_path = "experiments/coco/w32/w32_4x_reg03_bs10_512_adam_lr1e-3_coco_x140.yaml"
-        update_config_from_file(cfg, cfg_path)
-        cfg.defrost()
-        cfg.RANK = 0
-        cfg.freeze()
-
+        in_channels=3
+        extra=dict(
+            stem=dict(  
+                stem_channels=32,
+                out_channels=32,
+                expand_ratio=1),
+            num_stages=3,
+            stages_spec=dict(
+                num_modules=(3, 8, 3),
+                num_branches=(2, 3, 4),
+                num_blocks=(2, 2, 2),
+                module_type=('LITE', 'LITE', 'LITE'),
+                with_fuse=(True, True, True),
+                reduce_ratios=(8, 8, 8),
+                num_channels=(
+                    (40, 80),
+                    (40, 80, 160),
+                    (40, 80, 160, 320),
+                )),
+            with_head=False,
+            )
+        
         #hrnet_model = models.hrnet.get_pose_net(cfg, is_train=True)
-        backbone = models.hrnet.get_pose_net(cfg, is_train=True)
+        backbone = models.litehrnet.LiteHRNet(extra)
         #torch.cuda.set_device(gpu)
         #backbone = hrnet_model.cuda(gpu)
         #print(hrnet_model)
         
-        in_channels = [64, 128, 256, 512]
+        in_channels = [40, 80, 160, 320]
         #in_channels = [128, 256, 512]
-        head = models.yolo_kpts_head.YOLOXHeadKPTS(self.num_classes, self.width, in_channels=in_channels)
+        head = models.yolo_kpts_head_64.YOLOXHeadKPTS(self.num_classes, self.width, in_channels=in_channels)
         
         self.model = HRNet_Anchor(backbone, head)
         #self.model = self.model.to('cuda')
