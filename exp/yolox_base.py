@@ -24,8 +24,8 @@ class Exp(BaseExp):
 
         # ---------------- dataloader config ---------------- #
         # set worker to 4 for shorter dataloader init time
-        self.data_num_workers = 4
-        self.input_size = (384, 288)  # (height, width)
+        self.data_num_workers = 16
+        self.input_size = (640, 640)  # (height, width)
         # Actual multiscale ranges: [640-5*32, 640+5*32].
         # To disable multiscale training, set the
         # self.multiscale_range to 0.
@@ -37,8 +37,8 @@ class Exp(BaseExp):
         self.val_ann = "instances_val2017.json"
 
         # --------------- transform config ----------------- #
-        self.mosaic_prob = 1.0
-        self.mixup_prob = 1.0
+        self.mosaic_prob = 0.0
+        self.mixup_prob = 0.0
         self.hsv_prob = 1.0
         self.flip_prob = 0.5
         self.degrees = 10.0
@@ -65,7 +65,7 @@ class Exp(BaseExp):
         self.exp_name = os.path.split(os.path.realpath(__file__))[1].split(".")[0]
 
         # -----------------  testing config ------------------ #
-        self.test_size = (384, 288)
+        self.test_size = (640, 640)
         self.test_conf = 0.01
         self.nmsthre = 0.65
         self.data_set = "coco"

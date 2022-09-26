@@ -12,6 +12,8 @@ from __future__ import print_function
 import models.hrnet_dekr
 import models.hrnet
 import models.litehrnet
+import models.litehrhrnet
+import models.ditehrhrnet
 import models.yolo_kpts_head
 import models.yolo_kpts_head_64
 import models.predictOKS
